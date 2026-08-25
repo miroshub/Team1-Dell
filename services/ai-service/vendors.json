@@ -3,42 +3,80 @@
         "id": 1,
         "name": "Green Plastic Recycling",
         "categories": ["plastics"],
-        "location": "Cairo",
-        "vendor_type": "Plastic Recycler"
+        "location": "Nasr City",
+        "vendor_type": "Plastic Recycler",
+        "offer_price": 12,
+        "price_unit": "EGP/kg",
+        "pickup_available": true
     },
     {
         "id": 2,
         "name": "Cairo Paper Recycling",
         "categories": ["paper_cardboard"],
-        "location": "Cairo",
-        "vendor_type": "Paper & Cardboard Recycler"
+        "location": "Heliopolis",
+        "vendor_type": "Paper & Cardboard Recycler",
+        "offer_price": 5,
+        "price_unit": "EGP/kg",
+        "pickup_available": true
     },
     {
         "id": 3,
         "name": "Egypt Metal Recycling",
         "categories": ["metal"],
-        "location": "Cairo",
-        "vendor_type": "Metal Recycler"
+        "location": "Nasr City",
+        "vendor_type": "Metal Recycler",
+        "offer_price": 25,
+        "price_unit": "EGP/kg",
+        "pickup_available": false
     },
     {
         "id": 4,
         "name": "Glass Recycling Center",
         "categories": ["glass"],
-        "location": "Cairo",
-        "vendor_type": "Glass Recycler"
+        "location": "Maadi",
+        "vendor_type": "Glass Recycler",
+        "offer_price": 4,
+        "price_unit": "EGP/kg",
+        "pickup_available": true
     },
     {
         "id": 5,
         "name": "Organic Waste Solutions",
         "categories": ["organic_food"],
-        "location": "Cairo",
-        "vendor_type": "Composting / Organic Waste"
+        "location": "Nasr City",
+        "vendor_type": "Composting / Organic Waste",
+        "offer_price": 3,
+        "price_unit": "EGP/kg",
+        "pickup_available": true
     },
     {
         "id": 6,
         "name": "Certified E-Waste Egypt",
         "categories": ["e_waste"],
-        "location": "Cairo",
-        "vendor_type": "E-Waste Recycler"
+        "location": "Heliopolis",
+        "vendor_type": "E-Waste Recycler",
+        "offer_price": 30,
+        "price_unit": "EGP/kg",
+        "pickup_available": false
+    },
+    {
+        "id": 7,
+        "name": "Premium Plastic Buyers",
+        "categories": ["plastics"],
+        "location": "Nasr City",
+        "vendor_type": "Plastic Recycler",
+        "offer_price": 15,
+        "price_unit": "EGP/kg",
+        "pickup_available": true
+    },
+    {
+        "id": 8,
+        "name": "Maadi Plastic Buyers",
+        "categories": ["plastics"],
+        "location": "Maadi",
+        "vendor_type": "Plastic Recycler",
+        "offer_price": 20,
+        "price_unit": "EGP/kg",
+        "pickup_available": true
     }
 ]

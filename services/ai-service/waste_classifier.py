@@ -15,11 +15,16 @@ from PIL import Image, ImageOps
 
 from pydantic import BaseModel, Field
 
-from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
+#from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
+#from langchain_google_genai import ChatGoogleGenerativeAI
 
 # Vendor search
-from vendor_search import search_vendors
+from vendor_search import (
+    print_multi_category_results,
+    print_vendor_results,
+    search_vendors,
+    search_vendors_for_categories,
+)
 
 # Agentic RAG: reuse the same Chroma-backed tools (and vector store built by
 # `python -m chatbot.ingest`) that the chat assistant uses, so the classifier consults
@@ -40,6 +45,7 @@ if not API_KEY:
 
 
 MODEL_NAME = "gemini-3.6-flash"
+BUSINESS_LOCATION = "Nasr City"
 
 IMAGE_SUFFIXES = {
     ".jpg",
@@ -273,7 +279,7 @@ Do not pretend to be certain.
 
 TOOLS:
 You have two knowledge-base search tools available. Decide for yourself, per image,
-whether either is worth calling — do not call a tool when the material and its correct
+whether either is worth calling - do not call a tool when the material and its correct
 handling are already obvious to you.
 
 - search_egypt_waste_law: search Egypt's Waste Management Law No. 202/2020. Use this
@@ -454,7 +460,7 @@ class WasteClassifier:
             for tool_call in ai_message.tool_calls:
 
                 print(
-                    f"  🔎 Consulting {tool_call['name']}({tool_call['args']})...",
+                    f"  Consulting {tool_call['name']}({tool_call['args']})...",
                     file=sys.stderr,
                 )
 
@@ -512,10 +518,57 @@ class WasteClassifier:
 
 
 # ============================================================
-# 8. PRINT RESULT + VENDOR SEARCH
+# 8. VENDOR RECOMMENDATIONS
 # ============================================================
 
-def print_result(result: Result):
+def extract_unique_categories(
+    classification: WasteClassification,
+) -> list[CategoryKey]:
+    """Return detected categories in image order, without duplicates."""
+
+    return list(
+        dict.fromkeys(
+            item.category
+            for item in classification.items
+        )
+    )
+
+
+def search_vendors_for_classification(
+    classification: WasteClassification,
+    business_location: str | None = None,
+) -> dict[CategoryKey, list[dict]]:
+    """Search every category detected in a classification.
+
+    A single category uses the single-category search API; mixed waste uses the
+    multi-category API so each material keeps its own vendor list.
+    """
+
+    categories = extract_unique_categories(classification)
+
+    if len(categories) == 1:
+        category = categories[0]
+        return {
+            category: search_vendors(
+                category=category,
+                business_location=business_location,
+            )
+        }
+
+    return search_vendors_for_categories(
+        categories=categories,
+        business_location=business_location,
+    )
+
+
+# ============================================================
+# 9. PRINT RESULT + VENDOR SEARCH
+# ============================================================
+
+def print_result(
+    result: Result,
+    business_location: str = BUSINESS_LOCATION,
+):
 
     print("\n" + "=" * 60)
 
@@ -616,51 +669,44 @@ def print_result(result: Result):
     # VENDOR SEARCH
     # ========================================================
 
-    print("\n🏭 Matching Vendors:")
+    print("\nMatching Vendors:")
 
     try:
 
-        vendors = search_vendors(
-            c.primary_category
+        categories = extract_unique_categories(c)
+        vendor_results = search_vendors_for_classification(
+            classification=c,
+            business_location=business_location,
         )
 
-        if vendors:
+        if not categories:
 
-            for vendor in vendors:
+            print(
+                "  No vendor recommendations available: "
+                "no waste items were detected."
+            )
 
-                print(
-                    f"  - {vendor['name']}"
-                )
+        elif len(categories) == 1:
 
-                # Print extra information if it exists
-                if "type" in vendor:
-                    print(
-                        f"    Type     : "
-                        f"{vendor['type']}"
-                    )
+            category = categories[0]
 
-                if "location" in vendor:
-                    print(
-                        f"    Location : "
-                        f"{vendor['location']}"
-                    )
-
-                if "contact" in vendor:
-                    print(
-                        f"    Contact  : "
-                        f"{vendor['contact']}"
-                    )
+            print_vendor_results(
+                vendors=vendor_results[category],
+                category=category,
+                business_location=business_location,
+            )
 
         else:
 
-            print(
-                "  No matching vendors found."
+            print_multi_category_results(
+                results=vendor_results,
+                business_location=business_location,
             )
 
     except Exception as exc:
 
         print(
-            f"  ❌ Vendor search error: {exc}"
+            f"  Vendor search error: {exc}"
         )
 
     # --------------------------------------------------------
@@ -670,12 +716,12 @@ def print_result(result: Result):
     if result.needs_review:
 
         print(
-            "\n⚠️ FLAGGED FOR HUMAN REVIEW"
+            "\nFLAGGED FOR HUMAN REVIEW"
         )
 
 
 # ============================================================
-# 9. FIND IMAGES
+# 10. FIND IMAGES
 # ============================================================
 
 def collect_images(
@@ -695,7 +741,7 @@ def collect_images(
 
 
 # ============================================================
-# 10. MAIN
+# 11. MAIN
 # ============================================================
 if __name__ == "__main__":
 
@@ -710,18 +756,18 @@ if __name__ == "__main__":
     print(f"Image path: {image_path}")
 
     if not image_path.exists():
-        print("❌ Image does not exist!")
+        print("Image does not exist!")
         sys.exit(1)
 
-    print("✅ Image found")
-    print("🚀 Sending image to Gemini...")
+    print("Image found")
+    print("Sending image to Gemini...")
 
     classifier = WasteClassifier()
 
-    print("⏳ Waiting for Gemini response...")
+    print("Waiting for Gemini response...")
 
     result = classifier.classify(image_path)
 
-    print("✅ Gemini response received")
+    print("Gemini response received")
 
     print_result(result)
