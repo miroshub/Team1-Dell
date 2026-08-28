@@ -79,6 +79,58 @@
   gap: 16px;
 }
 
+/* Compound selector (.icon-btn.nav-toggle), not just .nav-toggle: .icon-btn's own
+   `display: flex` is defined later in this file, and two single-class selectors of
+   equal specificity resolve by source order — plain .nav-toggle would lose that fight
+   and the button would stay visible at every width, which is exactly what happened. */
+.icon-btn.nav-toggle {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .icon-btn.nav-toggle {
+    display: flex;
+  }
+}
+
+.mobile-nav-panel {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 61;
+  flex-direction: column;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 4px 20px 12px;
+
+  a {
+    padding: 14px 4px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    border-top: 1px solid var(--border);
+
+    &:first-child {
+      border-top: none;
+    }
+
+    &.active {
+      color: var(--green-dark);
+      font-weight: 700;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .mobile-nav-panel {
+    display: flex;
+  }
+}
+
 .menu-anchor {
   position: relative;
   display: flex;
